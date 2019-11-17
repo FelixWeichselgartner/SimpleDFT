@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
-#include "dft.h"
+#include "SimpleDFT.h"
 
 #define pi 3.14159265358979323846
 
@@ -63,8 +63,10 @@ float angle(float complex X){
  * @param  N:   the amount of values in the function
  * @retval      pointer to the fourier transformation
  */
-void dft(int *x, float complex *X, int N) {
+float complex * dft(int *x, int N) {
+    float complex *X;
     X = malloc(N * sizeof(float complex));
+
     float complex wExponent = -2 * I * pi / N;
     float complex temp;
     for (int l = 0; l < N; l++) {
@@ -72,8 +74,9 @@ void dft(int *x, float complex *X, int N) {
         for (int k = 0; k < N; k++) {
             temp = x[k] * cexp(wExponent * k * l) + temp;
         }
-        X[l] = temp/N;
+        X[l] = temp;
     }
+    return X;
 }
 
 /**
@@ -83,7 +86,7 @@ void dft(int *x, float complex *X, int N) {
  * @param  N:   the amount of values in the function
  * @retval      pointer to the fourier transformation
  */
-void fft(int *x, float complex *X, int N) {
+float complex * fft(int *x, int N) {
     int max = N / 2;
 
     //decimation in time
@@ -97,30 +100,35 @@ void fft(int *x, float complex *X, int N) {
 
     //fourier transform those both parts
     float complex *XS, *XSS;
-    dft(xs, XS, max);
-    dft(xss, XSS, max);
+    XS = dft(xs, max);
+    XSS = dft(xss, max);
 
     //add both together to actual fourier transformation
+    float complex *X;
     X = malloc(N * sizeof(float complex));
     complex float wExponent = -2 * I * pi / N;
 
     for (int l = 0; l < max; l++) {
-        X[l] = (XS[l] + cexp(wExponent * l) * XSS[l]) / 2;
+        X[l] = XS[l] + cexp(wExponent * l) * XSS[l];
     }
 
     for (int l = 0; l < max; l++) {
-        X[l + max] = (XS[l] - cexp(wExponent * l) * XSS[l]) / 2;
+        X[l + max] = XS[l] - cexp(wExponent * l) * XSS[l];
     }
 
     free(xs);
     free(xss);
     free(XS);
     free(XSS);
+    return X;
 }
+
+/////////////////////////////////////////////////////////////////////////////////
+// wrappers for python3
 
 void PyDFT(int *x, int in_n, float complex **X, int *out_n) {
     float complex *arr;
-    dft(x, arr, in_n);
+    arr = dft(x, in_n);
 
     *out_n = in_n;
     *X = arr;
@@ -128,11 +136,13 @@ void PyDFT(int *x, int in_n, float complex **X, int *out_n) {
 
 void PyFFT(int *x, int in_n, float complex **X, int *out_n) {
     float complex *arr;
-    fft(x, arr, in_n);
+    arr = fft(x, in_n);
 
     *out_n = in_n;
     *X = arr;
 }
+
+/////////////////////////////////////////////////////////////////////////////////
 
 /**
  * @brief               adds zeros to the function to get a better resolution
