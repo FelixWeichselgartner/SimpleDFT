@@ -1,14 +1,15 @@
-from dft import dft
+from dft import PyDFT
 import numpy as np
 from math import sin, pi
 
 x = np.empty(16, dtype=np.int32)
-
+X = []
 print(x)
 
 for i in range(16):
     x[i] = sin(i * pi / 2)
 
-X = dft(x)
+X = PyDFT(x, X, len(x))
+
 
 print(X)

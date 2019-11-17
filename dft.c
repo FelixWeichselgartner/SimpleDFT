@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
-#include <complex.h>
+#include "dft.h"
 
 #define pi 3.14159265358979323846
 
@@ -116,6 +116,22 @@ void fft(int *x, float complex *X, int N) {
     free(xss);
     free(XS);
     free(XSS);
+}
+
+void PyDFT(int *x, int in_n, float complex **X, int *out_n) {
+    float complex *arr;
+    dft(x, arr, in_n);
+
+    *out_n = in_n;
+    *X = arr;
+}
+
+void PyFFT(int *x, int in_n, float complex **X, int *out_n) {
+    float complex *arr;
+    fft(x, arr, in_n);
+
+    *out_n = in_n;
+    *X = arr;
 }
 
 /**
