@@ -2,3 +2,6 @@
 *.o
 __pycache__/
 *.pyc
+build/
+SimpleDFT_wrap.c
+SimpleDFT.py
